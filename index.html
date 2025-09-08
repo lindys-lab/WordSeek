@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,12 +20,6 @@
             flex-direction: column;
             justify-content: center;
         }
-        .btn {
-            @apply p-3 rounded-lg font-bold transition-transform transform hover:scale-105 shadow-md;
-        }
-        .input-box {
-            @apply p-3 text-2xl text-center rounded-lg bg-gray-800 border-2 border-gray-700 focus:outline-none focus:border-purple-500;
-        }
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -33,37 +27,10 @@
             max-width: 400px;
             margin: 0 auto;
         }
-        .grid-cell {
-            @apply h-20 w-20 flex items-center justify-center text-3xl font-bold bg-gray-800 rounded-lg cursor-pointer;
-            transition: all 0.2s ease;
-        }
-        .grid-cell:hover, .grid-cell:focus {
-            @apply scale-105 shadow-xl;
-            outline: none;
-        }
-        .grid-cell.selected {
-            @apply ring-4 ring-purple-500 bg-purple-600;
-        }
-        .grid-cell.correct {
-            @apply bg-green-600;
-        }
-        .grid-cell.incorrect {
-            @apply bg-red-600;
-        }
-        #word-list-container {
-            @apply mt-6 max-h-48 overflow-y-auto bg-gray-900 p-4 rounded-lg;
-        }
-        #word-list-container h3 {
-            @apply text-xl font-semibold mb-2 text-center;
-        }
         #word-list {
-            @apply list-none p-0 m-0 text-center;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 0.5rem;
-        }
-        .list-word {
-            @apply text-sm py-1 px-2 rounded-md bg-gray-700;
         }
     </style>
 </head>
@@ -73,20 +40,22 @@
         <h1 class="text-4xl font-extrabold text-center mb-6">Word Seek</h1>
         <div id="game-status" class="text-center mb-4 text-purple-400 font-medium">Click "New Game" to begin!</div>
 
-        <div class="grid-container" id="grid-container">
-            </div>
+        <div class="grid-container" id="grid-container" aria-label="Game grid">
+            <!-- grid cells will be inserted here -->
+        </div>
 
         <div id="current-word-display" class="text-center mt-6 text-3xl font-extrabold text-white h-10"></div>
 
         <div class="flex justify-center mt-6 space-x-4">
-            <button id="submit-btn" class="btn bg-purple-600 text-white" disabled>Submit Word</button>
-            <button id="clear-btn" class="btn bg-gray-600 text-white" disabled>Clear</button>
-            <button id="new-game-btn" class="btn bg-green-600 text-white">New Game</button>
+            <button id="submit-btn" class="p-3 rounded-lg font-bold transition-transform transform hover:scale-105 shadow-md bg-purple-600 text-white" disabled>Submit Word</button>
+            <button id="clear-btn" class="p-3 rounded-lg font-bold transition-transform transform hover:scale-105 shadow-md bg-gray-600 text-white" disabled>Clear</button>
+            <button id="new-game-btn" class="p-3 rounded-lg font-bold transition-transform transform hover:scale-105 shadow-md bg-green-600 text-white">New Game</button>
         </div>
 
-        <div id="word-list-container" class="hidden">
-            <h3 class="text-center">Found Words (<span id="found-count">0</span>)</h3>
-            <ul id="found-words" class="list-none p-0 m-0">
+        <div id="word-list-container" class="hidden mt-6 max-h-48 overflow-y-auto bg-gray-900 p-4 rounded-lg">
+            <h3 class="text-xl font-semibold mb-2 text-center">Found Words (<span id="found-count">0</span>)</h3>
+            <ul id="found-words" class="list-none p-0 m-0 text-center">
+                <!-- found words will be inserted here -->
             </ul>
         </div>
     </div>
@@ -154,7 +123,7 @@
                     
                     const cell = document.createElement('div');
                     cell.textContent = letter;
-                    cell.className = 'grid-cell';
+                    cell.className = 'h-20 w-20 flex items-center justify-center text-3xl font-bold bg-gray-800 rounded-lg cursor-pointer transition-all duration-200 ease-in-out focus:outline-none';
                     cell.setAttribute('data-row', row);
                     cell.setAttribute('data-col', col);
                     cell.setAttribute('tabindex', '-1');
@@ -225,7 +194,7 @@
             if (selectedCells.has(cellKey)) {
                 // Deselect if already selected
                 selectedCells.delete(cellKey);
-                cell.classList.remove('selected');
+                cell.classList.remove('ring-4', 'ring-purple-500', 'bg-purple-600', 'selected');
                 updateCurrentWord();
             } else {
                 // Check if the cell is adjacent to the last selected cell
@@ -240,7 +209,7 @@
 
                 if (isAdjacent) {
                     selectedCells.add(cellKey);
-                    cell.classList.add('selected');
+                    cell.classList.add('ring-4', 'ring-purple-500', 'bg-purple-600', 'selected');
                     updateCurrentWord();
                 } else {
                     alert("You can only select adjacent letters!");
@@ -283,12 +252,18 @@
         }
 
         function highlightCells(className) {
-            gridContainer.querySelectorAll('.grid-cell').forEach(cell => {
+            gridContainer.querySelectorAll('.grid-cell, .h-20').forEach(cell => {
                 const row = parseInt(cell.getAttribute('data-row'));
                 const col = parseInt(cell.getAttribute('data-col'));
                 const cellKey = `${row}-${col}`;
                 if (selectedCells.has(cellKey)) {
-                    cell.classList.add(className);
+                    if (className === 'correct') {
+                        cell.classList.add('bg-green-600');
+                        cell.classList.remove('bg-red-600');
+                    } else if (className === 'incorrect') {
+                        cell.classList.add('bg-red-600');
+                        cell.classList.remove('bg-green-600');
+                    }
                 }
             });
         }
@@ -297,8 +272,8 @@
             selectedCells.clear();
             currentWord = '';
             currentWordDisplay.textContent = '';
-            gridContainer.querySelectorAll('.grid-cell').forEach(cell => {
-                cell.classList.remove('selected', 'correct', 'incorrect');
+            gridContainer.querySelectorAll('.grid-cell, .h-20').forEach(cell => {
+                cell.classList.remove('ring-4', 'ring-purple-500', 'bg-purple-600', 'selected', 'bg-green-600', 'bg-red-600');
             });
             updateButtonState();
             gameStatus.textContent = message;
@@ -317,7 +292,7 @@
             sortedWords.forEach(word => {
                 const li = document.createElement('li');
                 li.textContent = word;
-                li.className = 'list-word';
+                li.className = 'text-sm py-1 px-2 rounded-md bg-gray-700 list-word';
                 foundWordsList.appendChild(li);
             });
             foundCountDisplay.textContent = foundWords.size;
@@ -325,7 +300,7 @@
 
         // --- Event Listeners ---
         gridContainer.addEventListener('click', (event) => {
-            if (event.target.classList.contains('grid-cell')) {
+            if (event.target.classList.contains('grid-cell') || event.target.classList.contains('h-20')) {
                 selectLetter(event.target);
             }
         });
@@ -337,7 +312,7 @@
         // Keyboard navigation
         document.addEventListener('keydown', (event) => {
             const activeElement = document.activeElement;
-            if (activeElement && activeElement.classList.contains('grid-cell')) {
+            if (activeElement && (activeElement.classList.contains('grid-cell') || activeElement.classList.contains('h-20'))) {
                 const key = event.key;
                 let newRow = parseInt(activeElement.getAttribute('data-row'));
                 let newCol = parseInt(activeElement.getAttribute('data-col'));
@@ -383,3 +358,4 @@
     </script>
 </body>
 </html>
+
